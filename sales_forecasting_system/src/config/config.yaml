@@ -1,0 +1,111 @@
+# Sales Forecasting System — Master Configuration
+# -----------------------------------------------
+# All tuneable parameters live here.
+# Environment-variable overrides are supported via ${ENV_VAR} syntax.
+
+# ── Data ────────────────────────────────────────────────────────────────────
+data:
+  raw_data_path: "c:/Users/Asus/Desktop/New folder/Forecasting Case- Study (1).xlsx"
+  processed_data_path: "data/processed/processed_sales.parquet"
+  external_holidays_path: "data/external/us_holidays.csv"
+
+  # Auto-detection (set to null to trigger heuristic detection)
+  date_column: null        # e.g. "Week"
+  target_column: null      # e.g. "Sales"
+  state_column: null       # e.g. "State"
+
+  # Resampling frequency: "W" = weekly, "D" = daily, "MS" = month-start
+  frequency: "W"
+
+  # Train/validation split ratio (fraction used for testing)
+  test_ratio: 0.20
+
+# ── Feature Engineering ─────────────────────────────────────────────────────
+features:
+  lag_periods: [1, 7, 30]
+  rolling_windows: [7, 30]
+  include_holiday_flag: true
+  holiday_country: "US"       # country code for holidays library
+
+# ── Models ──────────────────────────────────────────────────────────────────
+models:
+  forecast_horizon: 8   # number of weeks to forecast
+
+  arima:
+    enabled: true
+    auto_order: true           # use auto_arima if True
+    p: 2                       # used only if auto_order is False
+    d: 1
+    q: 1
+    P: 1                       # seasonal order
+    D: 1
+    Q: 1
+    s: 52                      # seasonal period (52 for weekly)
+    max_p: 3
+    max_q: 3
+    information_criterion: "aic"
+    stepwise: true
+    seasonal: true
+
+  prophet:
+    enabled: true
+    yearly_seasonality: true
+    weekly_seasonality: true
+    daily_seasonality: false
+    changepoint_prior_scale: 0.05
+    seasonality_prior_scale: 10.0
+    interval_width: 0.95
+    add_country_holidays: "US"
+
+  xgboost:
+    enabled: true
+    n_estimators: 500
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 5
+    gamma: 0.1
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    random_state: 42
+    early_stopping_rounds: 50
+
+  lstm:
+    enabled: true
+    sequence_length: 12        # lookback window (weeks)
+    units: [64, 32]            # LSTM layer sizes
+    dropout: 0.2
+    dense_units: 16
+    epochs: 100
+    batch_size: 32
+    learning_rate: 0.001
+    patience: 15               # early stopping patience
+    random_state: 42
+
+# ── Model Selection ─────────────────────────────────────────────────────────
+selection:
+  primary_metric: "RMSE"       # metric used to pick the best model
+  lower_is_better: true        # true for RMSE/MAE/MAPE, false for R2
+
+# ── Artifacts ───────────────────────────────────────────────────────────────
+artifacts:
+  models_dir: "artifacts/models"
+  metrics_dir: "artifacts/metrics"
+  forecasts_dir: "artifacts/forecasts"
+  plots_dir: "artifacts/plots"
+
+# ── API ─────────────────────────────────────────────────────────────────────
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+  log_level: "info"
+  title: "Sales Forecasting API"
+  description: "Production-ready time-series forecasting service"
+  version: "1.0.0"
+
+# ── Logging ─────────────────────────────────────────────────────────────────
+logging:
+  level: "DEBUG"
+  log_to_file: true

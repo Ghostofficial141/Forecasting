@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  # ── Forecasting API ──────────────────────────────────────────────────────
+  forecasting-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sales-forecasting-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - TF_CPP_MIN_LOG_LEVEL=3
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount data directory so raw Excel file is accessible
+      - ./data:/app/data
+      # Persist trained model artifacts
+      - ./artifacts:/app/artifacts
+      # Persist logs
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - forecasting-net
+
+  # ── Training job (one-shot container) ────────────────────────────────────
+  forecasting-trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sales-forecasting-trainer
+    command: ["python", "main.py", "train"]
+    environment:
+      - PYTHONPATH=/app
+      - TF_CPP_MIN_LOG_LEVEL=3
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    networks:
+      - forecasting-net
+    profiles:
+      - train   # only runs when: docker compose --profile train up
+
+networks:
+  forecasting-net:
+    driver: bridge
