@@ -1,0 +1,28 @@
+# Exclude massive folders from Vercel serverless function bundle
+venv/
+.venv/
+env/
+.env/
+ENV/
+.conda/
+
+# Exclude frontend dependencies and build outputs (Vercel builds these from scratch)
+node_modules/
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+
+# Exclude heavy machine learning checkpoints and datasets
+artifacts/
+data/
+src/models/
+tests/
+
+# Exclude local caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.vscode/
+.idea/
+.git/
