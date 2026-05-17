@@ -1,28 +1,21 @@
-# Exclude massive folders from Vercel serverless function bundle
+# Exclude Python backend and heavy libraries from Vercel deployment bundle
+api/
+src/
+tests/
 venv/
 .venv/
 env/
-.env/
-ENV/
-.conda/
+requirements.txt
+Dockerfile
+docker-compose.yml
+main.py
+setup.py
+setup.cfg
+scratch/
+scratch_inspect.py
+package-lock.json
 
-# Exclude frontend dependencies and build outputs (Vercel builds these from scratch)
-node_modules/
+# Exclude Next.js source code if you only want to serve the static dashboard from root
+# (If deploying the Next.js app, Vercel should be configured with Root Directory as 'dashboard')
 dashboard/node_modules/
 dashboard/.next/
-dashboard/out/
-
-# Exclude heavy machine learning checkpoints and datasets
-artifacts/
-data/
-src/models/
-tests/
-
-# Exclude local caches
-__pycache__/
-*.pyc
-.pytest_cache/
-.mypy_cache/
-.vscode/
-.idea/
-.git/
